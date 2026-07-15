@@ -132,6 +132,29 @@ const EARRING_METALS = ['#D4AF37', '#C8C8D0'];
 const MOUTH_COLOR = '#8B3A3A';
 const EYE_OUTLINE = '#20232a';
 
+// Kuratierte Dreiklänge (Hintergrund + 2 Formfarben) für den Stil
+// "abstract" -- harmonische, gesättigte Kombinationen statt roher HSL-Werte.
+const ABSTRACT_PALETTES = [
+  ['#264653', '#2A9D8F', '#E9C46A'],
+  ['#F94144', '#F3722C', '#F9C74F'],
+  ['#1D3557', '#457B9D', '#A8DADC'],
+  ['#6A4C93', '#8AC926', '#FFCA3A'],
+  ['#003049', '#D62828', '#F77F00'],
+  ['#390099', '#9E0059', '#FF5C8A'],
+  ['#0B4F6C', '#01BAEF', '#5AD2F4'],
+  ['#3D5A80', '#98C1D9', '#EE6C4D'],
+  ['#2B2D42', '#8D99AE', '#EF233C'],
+  ['#1B4332', '#40916C', '#95D5B2'],
+];
+
+// Kuratierte, ausreichend dunkle/gesättigte Farben für den Stil "initials",
+// damit weißer Text darauf immer gut lesbar bleibt.
+const INITIALS_COLORS = [
+  '#E63946', '#F3722C', '#F9A826', '#43AA8B', '#2A9D8F',
+  '#457B9D', '#5A189A', '#9D4EDD', '#C9184A', '#3A0CA3',
+  '#1D3557', '#2B2D42', '#264653', '#0B4F6C', '#6A4C93',
+];
+
 // Durchgängige dunkle Konturlinie um jede Silhouette -- der Haupt-Grund,
 // warum "flache" Illustrationen (Avataaars, Notionists o. Ä.) hochwertig statt
 // wie Klebe-Formen wirken. Alle Silhouetten-Shapes (Kopf, Ohren, Körper,
@@ -384,30 +407,64 @@ const HEADWEAR = {
     `<circle cx="77" cy="36" r="3.2" fill="${shadeColor(color, -15)}" ${STROKE_ATTRS}/>`,
 };
 
+// Geometrische Grundformen für den Stil "abstract" -- werden zentriert bei
+// (0,0) definiert und per transform="translate(...) rotate(...)" platziert,
+// damit Rotation und Position unabhängig voneinander bleiben.
+function abstractCircle(cx, cy, r, color, opacity) {
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" opacity="${opacity}"/>`;
+}
+function abstractRing(cx, cy, r, strokeWidth, color, opacity) {
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" opacity="${opacity}"/>`;
+}
+function abstractTriangle(cx, cy, size, rotation, color, opacity) {
+  const points = [
+    [0, -size],
+    [size * 0.87, size * 0.5],
+    [-size * 0.87, size * 0.5],
+  ]
+    .map(([x, y]) => `${x},${y}`)
+    .join(' ');
+  return `<polygon points="${points}" fill="${color}" opacity="${opacity}" transform="translate(${cx} ${cy}) rotate(${rotation})"/>`;
+}
+function abstractRect(cx, cy, size, rotation, color, opacity) {
+  return `<rect x="${-size / 2}" y="${-size / 2}" width="${size}" height="${size}" fill="${color}" opacity="${opacity}" transform="translate(${cx} ${cy}) rotate(${rotation})"/>`;
+}
+
+const ABSTRACT_SHAPES = {
+  circle: (cx, cy, size, rotation, color, opacity) => abstractCircle(cx, cy, size / 2, color, opacity),
+  ring: (cx, cy, size, rotation, color, opacity) => abstractRing(cx, cy, size / 2, size * 0.2, color, opacity),
+  triangle: (cx, cy, size, rotation, color, opacity) => abstractTriangle(cx, cy, size * 0.65, rotation, color, opacity),
+  square: (cx, cy, size, rotation, color, opacity) => abstractRect(cx, cy, size, rotation, color, opacity),
+};
+
+// Ermittelt aus einem Namen 1-2 Initialen fuer den Stil "initials": bei
+// mehreren Wörtern der erste Buchstabe von erstem und letztem Wort, bei
+// einem einzelnen Wort dessen erste ein bis zwei Buchstaben.
+function computeInitials(seedSource) {
+  const words = seedSource.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return '?';
+  if (words.length === 1) {
+    const word = words[0];
+    return (word.length >= 2 ? word.slice(0, 2) : word).toUpperCase();
+  }
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
+
 // ---------------------------------------------------------------------------
 // 4. Composition
 // ---------------------------------------------------------------------------
 
+// Verfügbare Werte für options.style. "character" ist der Default und bleibt
+// aus Kompatibilitätsgründen das implizite Verhalten, wenn kein Stil (oder
+// ein unbekannter Wert) angegeben wird.
+const STYLES = ['character', 'abstract', 'initials'];
+
 /**
- * Generiert einen deterministischen SVG-Avatar für einen Namen.
- *
- * @param {string} name - Beliebiger Name/String, dient als Seed.
- * @param {object} [options]
- * @param {number} [options.size=128] - Breite/Höhe des SVG in Pixeln.
- * @returns {string} Valider, eigenständiger SVG-Markup-String (inkl. xmlns).
+ * Stil "character": die ausführliche Figur mit Hautton, Frisur, Bart, Augen,
+ * Kleidung, Brille, Kopfbedeckung und Schmuck (siehe Abschnitt 3). Liefert
+ * die gemeinsame Zwischen-Repräsentation { backgroundFill, defs, content }.
  */
-export function generateAvatar(name, options = {}) {
-  const { size = 128 } = options;
-  // .normalize('NFC') wandelt Umlaute/Akzente in ihre vorkomponierte Normalform
-  // um (z. B. "a" + Combining-Diaeresis -> "ä"), damit visuell identische Namen
-  // unabhängig von ihrer Unicode-Kodierung (NFC vs. NFD, je nach Betriebssystem/
-  // Eingabequelle) immer denselben Seed und damit denselben Avatar ergeben.
-  const seedSource =
-    typeof name === 'string' && name.trim().length > 0 ? name.trim().normalize('NFC') : 'anonymous';
-
-  const seed = hashString(seedSource);
-  const rand = createPRNG(seed);
-
+function renderCharacterAvatar(rand, seed) {
   // Reihenfolge der rand-Aufrufe ist absichtlich fix -- das ist die Basis für
   // die Determinismus-Garantie (gleicher Name => gleiche Ziehungsreihenfolge).
   const skinColor = rand.pick(SKIN_TONES);
@@ -499,16 +556,112 @@ export function generateAvatar(name, options = {}) {
   ].join('');
 
   const defs =
-    `<defs>${renderBackgroundGradient(gradientId, backgroundGradient)}` +
+    renderBackgroundGradient(gradientId, backgroundGradient) +
     `<filter id="${shadowFilterId}" x="-20%" y="-20%" width="140%" height="140%">` +
     `<feDropShadow dx="0" dy="1.2" stdDeviation="1.3" flood-color="#000" flood-opacity="0.25"/>` +
-    `</filter></defs>`;
+    `</filter>`;
+
+  return {
+    backgroundFill: `url(#${gradientId})`,
+    defs,
+    content: `<g filter="url(#${shadowFilterId})">${layers}</g>`,
+  };
+}
+
+/**
+ * Stil "abstract": drei überlappende geometrische Formen (Kreis, Ring,
+ * Dreieck, Quadrat) in einer kuratierten Farbpalette vor Verlauf-Hintergrund
+ * -- kein Gesicht, rein abstrakt. Ein Clip-Path sorgt dafür, dass Formen nie
+ * über die abgerundeten Ecken der Hintergrundfläche hinausragen.
+ */
+function renderAbstractAvatar(rand, seed) {
+  const [bgColor, colorA, colorB] = rand.pick(ABSTRACT_PALETTES);
+  const shapeColors = [colorA, colorB, shadeColor(colorA, -18)];
+  const shapeTypes = Object.keys(ABSTRACT_SHAPES);
+
+  let shapes = '';
+  for (let i = 0; i < 3; i++) {
+    const type = rand.pick(shapeTypes);
+    const color = shapeColors[i % shapeColors.length];
+    const cx = 20 + rand.next() * 60;
+    const cy = 20 + rand.next() * 60;
+    const size = 26 + rand.next() * 30;
+    const rotation = Math.floor(rand.next() * 360);
+    const opacity = (0.85 + rand.next() * 0.15).toFixed(2);
+    shapes += ABSTRACT_SHAPES[type](cx, cy, size, rotation, color, opacity);
+  }
+
+  const gradientId = `bg-${seed}`;
+  const clipId = `clip-${seed}`;
+  const defs =
+    renderBackgroundGradient(gradientId, [bgColor, shadeColor(bgColor, -15)]) +
+    `<clipPath id="${clipId}"><rect x="0" y="0" width="100" height="100" rx="14"/></clipPath>`;
+
+  return {
+    backgroundFill: `url(#${gradientId})`,
+    defs,
+    content: `<g clip-path="url(#${clipId})">${shapes}</g>`,
+  };
+}
+
+/**
+ * Stil "initials": ein bis zwei Buchstaben aus dem Namen (erster Buchstabe
+ * von erstem/letztem Wort bzw. die ersten beiden Buchstaben bei einem
+ * einzelnen Wort), zentriert vor einem kuratierten Verlauf-Hintergrund.
+ */
+function renderInitialsAvatar(seedSource, rand, seed) {
+  const initials = computeInitials(seedSource);
+  const color = rand.pick(INITIALS_COLORS);
+  const gradientId = `bg-${seed}`;
+  const defs = renderBackgroundGradient(gradientId, [color, shadeColor(color, -20)]);
+  const fontSize = initials.length >= 2 ? 36 : 44;
+
+  const content =
+    `<text x="50" y="50" text-anchor="middle" dominant-baseline="central" ` +
+    `font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" ` +
+    `font-size="${fontSize}" font-weight="600" fill="#FFFFFF" letter-spacing="1">` +
+    `${escapeXml(initials)}</text>`;
+
+  return { backgroundFill: `url(#${gradientId})`, defs, content };
+}
+
+/**
+ * Generiert einen deterministischen SVG-Avatar für einen Namen.
+ *
+ * @param {string} name - Beliebiger Name/String, dient als Seed.
+ * @param {object} [options]
+ * @param {number} [options.size=128] - Breite/Höhe des SVG in Pixeln.
+ * @param {'character'|'abstract'|'initials'} [options.style='character'] -
+ *   Visueller Stil: "character" (ausführliche Figur, Default), "abstract"
+ *   (abstrakte Farbformen) oder "initials" (Initialen vor Farbfläche).
+ *   Unbekannte Werte fallen auf "character" zurück.
+ * @returns {string} Valider, eigenständiger SVG-Markup-String (inkl. xmlns).
+ */
+export function generateAvatar(name, options = {}) {
+  const { size = 128, style = 'character' } = options;
+  // .normalize('NFC') wandelt Umlaute/Akzente in ihre vorkomponierte Normalform
+  // um (z. B. "a" + Combining-Diaeresis -> "ä"), damit visuell identische Namen
+  // unabhängig von ihrer Unicode-Kodierung (NFC vs. NFD, je nach Betriebssystem/
+  // Eingabequelle) immer denselben Seed und damit denselben Avatar ergeben.
+  const seedSource =
+    typeof name === 'string' && name.trim().length > 0 ? name.trim().normalize('NFC') : 'anonymous';
+
+  const seed = hashString(seedSource);
+  const rand = createPRNG(seed);
+
+  const resolvedStyle = STYLES.includes(style) ? style : 'character';
+  const scene =
+    resolvedStyle === 'abstract'
+      ? renderAbstractAvatar(rand, seed)
+      : resolvedStyle === 'initials'
+        ? renderInitialsAvatar(seedSource, rand, seed)
+        : renderCharacterAvatar(rand, seed);
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="Avatar von ${escapeXml(seedSource)}">` +
-    defs +
-    `<rect x="0" y="0" width="100" height="100" rx="14" fill="url(#${gradientId})"/>` +
-    `<g filter="url(#${shadowFilterId})">${layers}</g>` +
+    `<defs>${scene.defs}</defs>` +
+    `<rect x="0" y="0" width="100" height="100" rx="14" fill="${scene.backgroundFill}"/>` +
+    scene.content +
     `</svg>`
   );
 }
