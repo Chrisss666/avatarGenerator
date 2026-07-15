@@ -398,7 +398,12 @@ const HEADWEAR = {
  */
 export function generateAvatar(name, options = {}) {
   const { size = 128 } = options;
-  const seedSource = typeof name === 'string' && name.trim().length > 0 ? name.trim() : 'anonymous';
+  // .normalize('NFC') wandelt Umlaute/Akzente in ihre vorkomponierte Normalform
+  // um (z. B. "a" + Combining-Diaeresis -> "ä"), damit visuell identische Namen
+  // unabhängig von ihrer Unicode-Kodierung (NFC vs. NFD, je nach Betriebssystem/
+  // Eingabequelle) immer denselben Seed und damit denselben Avatar ergeben.
+  const seedSource =
+    typeof name === 'string' && name.trim().length > 0 ? name.trim().normalize('NFC') : 'anonymous';
 
   const seed = hashString(seedSource);
   const rand = createPRNG(seed);
