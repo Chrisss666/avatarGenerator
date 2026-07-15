@@ -402,7 +402,11 @@
 
     function generateAvatar(name, options = {}) {
       const { size = 128 } = options;
-      const seedSource = typeof name === 'string' && name.trim().length > 0 ? name.trim() : 'anonymous';
+      // .normalize('NFC') wandelt Umlaute/Akzente in ihre vorkomponierte Normalform
+      // um, damit visuell identische Namen unabhängig von ihrer Unicode-Kodierung
+      // (NFC vs. NFD) immer denselben Seed und damit denselben Avatar ergeben.
+      const seedSource =
+        typeof name === 'string' && name.trim().length > 0 ? name.trim().normalize('NFC') : 'anonymous';
       const seed = hashString(seedSource);
       const rand = createPRNG(seed);
 
@@ -496,7 +500,8 @@
       const name = nameInput.value;
       const svg = generateAvatar(name, { size: 160 });
       container.innerHTML = svg;
-      const seedSource = typeof name === 'string' && name.trim().length > 0 ? name.trim() : 'anonymous';
+      const seedSource =
+        typeof name === 'string' && name.trim().length > 0 ? name.trim().normalize('NFC') : 'anonymous';
       seedInfo.textContent = `Seed-Quelle: "${seedSource}"`;
     }
 
