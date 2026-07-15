@@ -294,12 +294,13 @@ function stubbleDots(color) {
 const FACIAL_HAIR = {
   none: () => '',
   stubble: (color) => stubbleDots(color),
-  mustache: (color) => `<path d="M42 58 Q50 63 58 58 Q50 61 42 58 Z" fill="${color}" ${STROKE_ATTRS}/>`,
-  goatee: (color) => `<path d="M44 68 Q50 80 56 68 Q50 74 44 68 Z" fill="${color}" ${STROKE_ATTRS}/>`,
+  mustache: (color) => `<path d="M43 55 Q50 57.5 57 55 Q50 57 43 55 Z" fill="${color}" ${STROKE_ATTRS}/>`,
+  goatee: (color) =>
+    `<path d="M38 63 C36 72 40 82 50 84 C60 82 64 72 62 63 C58 69 42 69 38 63 Z" fill="${color}" ${STROKE_ATTRS}/>`,
   fullBeard: (color) =>
-    `<path d="M50 79 C29 79 25 57 27 43 C29 60 33 71 50 73 C67 71 71 60 73 43 C75 57 71 79 50 79 Z" fill="${color}" ${STROKE_ATTRS}/>`,
+    `<path d="M28 50 C26 66 32 80 50 82 C68 80 74 66 72 50 C69 62 60 68 50 68 C40 68 31 62 28 50 Z" fill="${color}" ${STROKE_ATTRS}/>`,
   longBeard: (color) =>
-    `<path d="M50 86 C27 86 23 57 26 41 C28 60 32 76 50 79 C68 76 72 60 74 41 C77 57 73 86 50 86 Z" fill="${color}" ${STROKE_ATTRS}/>`,
+    `<path d="M28 50 C25 68 30 88 50 96 C70 88 75 68 72 50 C69 62 60 68 50 68 C40 68 31 62 28 50 Z" fill="${color}" ${STROKE_ATTRS}/>`,
 };
 
 // Haaransatz-Kappe: nutzt exakt denselben oberen Bogen wie der Kopf (siehe
