@@ -69,4 +69,4 @@ new AvatarGenerator(defaultOptions?)
 
 This project is **not** under an open-source license. All rights belong to [Chrisss666](https://github.com/Chrisss666). Use, copying, modification, or redistribution is only permitted with the express permission of the author — see [LICENSE](LICENSE).
 
-For usage permission, please get in touch via GitHub.
+For usage permission, please get in touch via GitHub or email: git@404brainnotfound.at

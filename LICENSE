@@ -1,3 +1,5 @@
+License Version 1.0, dated 2026-07-16
+
 Copyright (c) 2026 Chrisss666 (https://github.com/Chrisss666)
 
 All Rights Reserved.
@@ -9,12 +11,18 @@ default merely by viewing or cloning this repository.
 
 Permission to use, copy, modify, and/or distribute the Software, free of
 charge, is granted only to individuals or organizations that have
-received explicit permission from the copyright holder to do so. Any
-such permission is granted solely at the discretion of the copyright
-holder, may be limited in scope, and may be revoked at any time.
+received explicit permission from the copyright holder to do so. Such
+permission is only valid if granted in writing (e.g. by email) by the
+copyright holder, is granted solely at the discretion of the copyright
+holder, may be limited in scope, and may be revoked at any time upon
+written notice, in which case any further use of the Software must
+cease.
 
 Unauthorized use, reproduction, modification, or distribution of the
 Software is strictly prohibited.
+
+Requests for permission to use the Software must be sent to the
+copyright holder at: git@404brainnotfound.at
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -23,3 +31,8 @@ IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+
+This license is governed by and construed in accordance with the laws
+of Austria, excluding its conflict-of-law provisions. The exclusive
+place of jurisdiction for any disputes arising out of or in connection
+with this license is Austria.
