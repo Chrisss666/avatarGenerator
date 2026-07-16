@@ -1,31 +1,31 @@
 /**
  * avatarGenerator.js
  *
- * Deterministischer, abhängigkeitsfreier Charakter-Avatar-Generator.
+ * Deterministic, dependency-free character avatar generator.
  *
- * Aus einem beliebigen Namens-String wird ein Seed abgeleitet, der einen
- * Pseudo-Zufallsgenerator (PRNG) speist. Dieser PRNG entscheidet -- immer in
- * derselben Reihenfolge -- über alle visuellen Merkmale (Hautton, Frisur,
- * Bart, Augen, Kleidung, Brille, Kopfbedeckung, Schmuck ...). Gleicher Name
- * => exakt gleiche Aufrufreihenfolge des PRNG => exakt derselbe Avatar.
+ * A seed is derived from any given name string, which feeds a
+ * pseudo-random number generator (PRNG). This PRNG decides -- always in
+ * the same order -- all visual traits (skin tone, hairstyle, beard, eyes,
+ * clothing, glasses, headwear, jewelry ...). Same name
+ * => exact same PRNG call sequence => exact same avatar.
  *
- * Keine externen Libraries, Fonts, Bilder oder Netzwerk-Requests. Alles wird
- * als reiner SVG-String zur Laufzeit zusammengesetzt und kann direkt in
- * innerHTML / eine View (MVC) eingesetzt werden.
+ * No external libraries, fonts, images, or network requests. Everything is
+ * assembled as a pure SVG string at runtime and can be inserted directly
+ * into innerHTML / a view (MVC).
  *
  * @author    Chrisss666 (https://github.com/Chrisss666)
  * @copyright Copyright (c) 2026 Chrisss666. All Rights Reserved.
- * @license   Proprietary -- see LICENSE file. Nutzung nur mit ausdrücklicher
- *            Erlaubnis des Autors gestattet.
+ * @license   Proprietary -- see LICENSE file. Use only permitted with
+ *            the express permission of the author.
  */
 
 // ---------------------------------------------------------------------------
-// 1. Seed-Erzeugung & PRNG
+// 1. Seed generation & PRNG
 // ---------------------------------------------------------------------------
 
 /**
- * FNV-1a Hash: wandelt einen String deterministisch in einen 32-Bit
- * Integer-Seed um. Zwei gleiche Strings liefern immer denselben Seed.
+ * FNV-1a hash: deterministically converts a string into a 32-bit
+ * integer seed. Two identical strings always yield the same seed.
  */
 function hashString(str) {
   let hash = 0x811c9dc5; // FNV offset basis
@@ -37,8 +37,8 @@ function hashString(str) {
 }
 
 /**
- * Mulberry32 PRNG, gekapselt mit Helper-Methoden für die Merkmalsauswahl.
- * Liefert bei gleichem Seed immer dieselbe Sequenz von Zufallswerten.
+ * Mulberry32 PRNG, wrapped with helper methods for trait selection.
+ * Given the same seed, it always produces the same sequence of random values.
  */
 function createPRNG(seed) {
   let state = seed >>> 0;
@@ -56,9 +56,9 @@ function createPRNG(seed) {
   }
 
   /**
-   * Wählt einen Wert anhand relativer Gewichte, z. B.
-   * pickWeighted([['none', 60], ['glasses', 40]]) => 'none' ist 1.5x
-   * wahrscheinlicher als 'glasses'.
+   * Picks a value based on relative weights, e.g.
+   * pickWeighted([['none', 60], ['glasses', 40]]) => 'none' is 1.5x
+   * more likely than 'glasses'.
    */
   function pickWeighted(entries) {
     const total = entries.reduce((sum, [, weight]) => sum + weight, 0);
@@ -74,10 +74,10 @@ function createPRNG(seed) {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Farb-Utilities & kuratierte Paletten
+// 2. Color utilities & curated palettes
 // ---------------------------------------------------------------------------
 
-/** Hellt (positiver percent) oder dunkelt (negativer percent) eine Hex-Farbe ab. */
+/** Lightens (positive percent) or darkens (negative percent) a hex color. */
 function shadeColor(hex, percent) {
   const num = parseInt(hex.slice(1), 16);
   const clamp = (v) => Math.max(0, Math.min(255, Math.round(v)));
@@ -96,8 +96,8 @@ function escapeXml(str) {
     .replace(/'/g, '&apos;');
 }
 
-// Handverlesene Paletten statt roher HSL-Zufallswerte, damit jede Kombination
-// stimmig wirkt.
+// Hand-picked palettes instead of raw random HSL values, so that every
+// combination looks coherent.
 const SKIN_TONES = [
   '#FFE0BD', '#FFCD94', '#F1C27D', '#E0AC69', '#C68642',
   '#A9673F', '#8D5524', '#6B4226', '#4A2E20', '#3B2219',
@@ -111,8 +111,8 @@ const CLOTHING_COLORS = [
   '#3E5C76', '#5B8C5A', '#C1666B', '#7B4B94', '#D8A657',
   '#4B4E6D', '#2A6F77', '#B5495B', '#3F7157', '#8C5E3C',
 ];
-// Diagonale Zweifarb-Verläufe statt flacher Flächen für einen hochwertigeren
-// Hintergrund-Look.
+// Diagonal two-color gradients instead of flat fills, for a higher-quality
+// background look.
 const BACKGROUND_GRADIENTS = [
   ['#FDE2A0', '#F7B76D'],
   ['#A7C4BC', '#5E9490'],
@@ -132,8 +132,8 @@ const EARRING_METALS = ['#D4AF37', '#C8C8D0'];
 const MOUTH_COLOR = '#8B3A3A';
 const EYE_OUTLINE = '#20232a';
 
-// Kuratierte Dreiklänge (Hintergrund + 2 Formfarben) für den Stil
-// "abstract" -- harmonische, gesättigte Kombinationen statt roher HSL-Werte.
+// Curated triads (background + 2 shape colors) for the "abstract" style --
+// harmonious, saturated combinations instead of raw HSL values.
 const ABSTRACT_PALETTES = [
   ['#264653', '#2A9D8F', '#E9C46A'],
   ['#F94144', '#F3722C', '#F9C74F'],
@@ -147,28 +147,28 @@ const ABSTRACT_PALETTES = [
   ['#1B4332', '#40916C', '#95D5B2'],
 ];
 
-// Kuratierte, ausreichend dunkle/gesättigte Farben für den Stil "initials",
-// damit weißer Text darauf immer gut lesbar bleibt.
+// Curated colors, sufficiently dark/saturated for the "initials" style,
+// so white text on top always stays readable.
 const INITIALS_COLORS = [
   '#E63946', '#F3722C', '#F9A826', '#43AA8B', '#2A9D8F',
   '#457B9D', '#5A189A', '#9D4EDD', '#C9184A', '#3A0CA3',
   '#1D3557', '#2B2D42', '#264653', '#0B4F6C', '#6A4C93',
 ];
 
-// Durchgängige dunkle Konturlinie um jede Silhouette -- der Haupt-Grund,
-// warum "flache" Illustrationen (Avataaars, Notionists o. Ä.) hochwertig statt
-// wie Klebe-Formen wirken. Alle Silhouetten-Shapes (Kopf, Ohren, Körper,
-// Haare, Bart, Kopfbedeckung) bekommen dieselbe Kontur.
+// Consistent dark outline around every silhouette -- the main reason "flat"
+// illustrations (Avataaars, Notionists, etc.) look high-quality instead of
+// like pasted-on shapes. All silhouette shapes (head, ears, body, hair,
+// beard, headwear) get the same outline.
 const OUTLINE = '#20232a';
 const OUTLINE_W = 1.6;
 const STROKE_ATTRS = `stroke="${OUTLINE}" stroke-width="${OUTLINE_W}" stroke-linejoin="round" stroke-linecap="round"`;
 
 // ---------------------------------------------------------------------------
-// 3. Trait-Renderer
+// 3. Trait renderers
 // ---------------------------------------------------------------------------
-// Jede Funktion liefert einen fertigen SVG-Snippet-String. Das interne
-// Koordinatensystem ist fix auf viewBox "0 0 100 100" abgestimmt, damit alle
-// Merkmale unabhängig von der Ziel-Ausgabegröße zueinander passen.
+// Each function returns a ready-made SVG snippet string. The internal
+// coordinate system is fixed to viewBox "0 0 100 100" so that all traits
+// line up with each other regardless of the target output size.
 
 function renderBackgroundGradient(gradientId, [colorA, colorB]) {
   return (
@@ -178,13 +178,12 @@ function renderBackgroundGradient(gradientId, [colorA, colorB]) {
   );
 }
 
-// Gemeinsamer oberer Kopf-Bogen (Wangenbreite bei y=42, Scheitel bei y=21) --
-// wird sowohl vom Kopf als auch vom Haaransatz genutzt, damit beide Silhouetten
-// nahtlos ineinander übergehen (keine sichtbare Naht/Lücke mehr wie bei
-// Ellipse+Kreisbogen-Kombinationen).
+// Shared upper head arc (cheek width at y=42, crown at y=21) -- used by both
+// the head and the hairline, so both silhouettes blend seamlessly into each
+// other (no more visible seam/gap like with ellipse+arc combinations).
 const HEAD_TOP_ARC = 'M27 42 C27 29 38 21 50 21 C62 21 73 29 73 42';
 
-// Körperbasis (Schultern) + austauschbares Ausschnitt-/Kragendetail.
+// Body base (shoulders) + interchangeable neckline/collar detail.
 function renderBody(clothingColor, variant) {
   const base = `<path d="M13 100 L13 88 C13 70 30 66 50 66 C70 66 87 70 87 88 L87 100 Z" fill="${clothingColor}" ${STROKE_ATTRS}/>`;
   const shadow = shadeColor(clothingColor, -18);
@@ -208,16 +207,16 @@ function renderEars(skinColor) {
   );
 }
 
-// Gesicht als 4 kubische Bezier-Segmente statt einer platten Ellipse: breiter
-// an den Wangen (y=42), schmaler zulaufend zum Kinn (y=72) -- wirkt wie ein
-// echtes, gezeichnetes Gesicht statt einer geometrischen Grundform.
+// Face as 4 cubic Bezier segments instead of a flat ellipse: wider at the
+// cheeks (y=42), narrowing towards the chin (y=72) -- looks like a real,
+// drawn face instead of a plain geometric shape.
 function renderHead(skinColor) {
   const d = `${HEAD_TOP_ARC} C73 58 66 72 50 72 C34 72 27 58 27 42 Z`;
   return `<path d="${d}" fill="${skinColor}" ${STROKE_ATTRS}/>`;
 }
 
-// Dezente Kontur-Schattierung + Stirn-Glanzlicht für einen plastischeren,
-// "hochwertigeren" Eindruck statt einer komplett flachen Fläche.
+// Subtle contour shading + forehead highlight for a more three-dimensional,
+// "higher-quality" impression instead of a completely flat surface.
 function renderFaceShading(skinColor) {
   const shadow = shadeColor(skinColor, -14);
   const highlight = shadeColor(skinColor, 18);
@@ -260,8 +259,8 @@ const EYEBROWS = {
     `<rect x="36" y="37.5" width="8.5" height="1.3" rx="0.65" fill="${color}"/><rect x="55.5" y="37.5" width="8.5" height="1.3" rx="0.65" fill="${color}"/>`,
 };
 
-// Augen mit Lederhaut/Iris/Pupille/Glanzlicht statt flacher Punkte, plus
-// dünner Kontur um die Lederhaut für mehr Tiefe.
+// Eyes with sclera/iris/pupil/highlight instead of flat dots, plus a thin
+// outline around the sclera for more depth.
 function eyeWithIris(cx, cy, irisColor, r = 3.4) {
   return (
     `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="${OUTLINE}" stroke-width="0.9"/>` +
@@ -326,14 +325,14 @@ const FACIAL_HAIR = {
     `<path d="M28 50 C25 68 30 88 50 96 C70 88 75 68 72 50 C69 62 60 68 50 68 C40 68 31 62 28 50 Z" fill="${color}" ${STROKE_ATTRS}/>`,
 };
 
-// Haaransatz-Kappe: nutzt exakt denselben oberen Bogen wie der Kopf (siehe
-// HEAD_TOP_ARC), damit Haar und Kopfsilhouette nahtlos ineinander übergehen.
-// Die Haaransatzlinie besteht aus zwei Bezier-Segmenten: an den Seiten (nahe
-// den Ohren, x=27/73) reicht sie bis `sideY` herunter, in der Mitte (Stirn)
-// nur bis `centerY`. WICHTIG: centerY muss deutlich über der Augenbrauen-Linie
-// (y=35) bleiben, sonst verdeckt das Haar Augenbrauen/Augen/Nase/Mund -- genau
-// das war der Bug, den ein früherer Durchlauf hier eingebaut hatte (eine
-// einzelne, zu weit durchhängende Kurve reichte bis y=51+ herunter).
+// Hairline cap: uses the exact same top arc as the head (see HEAD_TOP_ARC),
+// so hair and head silhouette blend seamlessly into each other. The
+// hairline consists of two Bezier segments: on the sides (near the ears,
+// x=27/73) it reaches down to `sideY`, in the middle (forehead) only down to
+// `centerY`. IMPORTANT: centerY must stay well above the eyebrow line
+// (y=35), otherwise the hair covers the eyebrows/eyes/nose/mouth -- exactly
+// the bug that an earlier pass introduced here (a single curve sagging too
+// far down reached y=51+).
 function hairCapPath(sideY, centerY) {
   return (
     `${HEAD_TOP_ARC} L73 ${sideY} ` +
@@ -407,9 +406,9 @@ const HEADWEAR = {
     `<circle cx="77" cy="36" r="3.2" fill="${shadeColor(color, -15)}" ${STROKE_ATTRS}/>`,
 };
 
-// Geometrische Grundformen für den Stil "abstract" -- werden zentriert bei
-// (0,0) definiert und per transform="translate(...) rotate(...)" platziert,
-// damit Rotation und Position unabhängig voneinander bleiben.
+// Basic geometric shapes for the "abstract" style -- defined centered at
+// (0,0) and placed via transform="translate(...) rotate(...)", so that
+// rotation and position stay independent of each other.
 function abstractCircle(cx, cy, r, color, opacity) {
   return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" opacity="${opacity}"/>`;
 }
@@ -437,9 +436,9 @@ const ABSTRACT_SHAPES = {
   square: (cx, cy, size, rotation, color, opacity) => abstractRect(cx, cy, size, rotation, color, opacity),
 };
 
-// Ermittelt aus einem Namen 1-2 Initialen fuer den Stil "initials": bei
-// mehreren Wörtern der erste Buchstabe von erstem und letztem Wort, bei
-// einem einzelnen Wort dessen erste ein bis zwei Buchstaben.
+// Derives 1-2 initials from a name for the "initials" style: for multiple
+// words, the first letter of the first and last word; for a single word,
+// its first one or two letters.
 function computeInitials(seedSource) {
   const words = seedSource.split(/\s+/).filter(Boolean);
   if (words.length === 0) return '?';
@@ -454,19 +453,19 @@ function computeInitials(seedSource) {
 // 4. Composition
 // ---------------------------------------------------------------------------
 
-// Verfügbare Werte für options.style. "character" ist der Default und bleibt
-// aus Kompatibilitätsgründen das implizite Verhalten, wenn kein Stil (oder
-// ein unbekannter Wert) angegeben wird.
+// Available values for options.style. "character" is the default and,
+// for compatibility reasons, remains the implicit behavior when no style
+// (or an unknown value) is provided.
 const STYLES = ['character', 'abstract', 'initials'];
 
 /**
- * Stil "character": die ausführliche Figur mit Hautton, Frisur, Bart, Augen,
- * Kleidung, Brille, Kopfbedeckung und Schmuck (siehe Abschnitt 3). Liefert
- * die gemeinsame Zwischen-Repräsentation { backgroundFill, defs, content }.
+ * "character" style: the detailed figure with skin tone, hairstyle, beard,
+ * eyes, clothing, glasses, headwear, and jewelry (see section 3). Returns
+ * the shared intermediate representation { backgroundFill, defs, content }.
  */
 function renderCharacterAvatar(rand, seed) {
-  // Reihenfolge der rand-Aufrufe ist absichtlich fix -- das ist die Basis für
-  // die Determinismus-Garantie (gleicher Name => gleiche Ziehungsreihenfolge).
+  // The order of rand calls is intentionally fixed -- this is the basis for
+  // the determinism guarantee (same name => same draw order).
   const skinColor = rand.pick(SKIN_TONES);
   const hairColor = rand.pick(HAIR_COLORS);
   const irisColor = rand.pick(IRIS_COLORS);
@@ -531,11 +530,11 @@ function renderCharacterAvatar(rand, seed) {
   const gradientId = `bg-${seed}`;
   const shadowFilterId = `fx-${seed}`;
 
-  // Z-Reihenfolge: Körper -> Ohren -> Kopf -> Schattierung -> Gesichtszüge ->
-  // Bart -> Haare -> Brille -> Kopfbedeckung -> Ohrringe (jede Ebene liegt
-  // über der vorherigen). Ohrringe werden bewusst ganz zuletzt gezeichnet,
-  // damit sie nie von Kopf ODER von herabhängenden Haarsträhnen (wavy,
-  // ponytail) verdeckt werden können.
+  // Z-order: body -> ears -> head -> shading -> facial features ->
+  // beard -> hair -> glasses -> headwear -> earrings (each layer sits
+  // above the previous one). Earrings are deliberately drawn last, so
+  // they can never be covered by the head OR by drooping hair strands
+  // (wavy, ponytail).
   const layers = [
     renderBody(clothingColor, clothingVariant),
     renderNeck(skinColor),
@@ -569,10 +568,10 @@ function renderCharacterAvatar(rand, seed) {
 }
 
 /**
- * Stil "abstract": drei überlappende geometrische Formen (Kreis, Ring,
- * Dreieck, Quadrat) in einer kuratierten Farbpalette vor Verlauf-Hintergrund
- * -- kein Gesicht, rein abstrakt. Ein Clip-Path sorgt dafür, dass Formen nie
- * über die abgerundeten Ecken der Hintergrundfläche hinausragen.
+ * "abstract" style: three overlapping geometric shapes (circle, ring,
+ * triangle, square) in a curated color palette in front of a gradient
+ * background -- no face, purely abstract. A clip path ensures shapes never
+ * extend beyond the rounded corners of the background area.
  */
 function renderAbstractAvatar(rand, seed) {
   const [bgColor, colorA, colorB] = rand.pick(ABSTRACT_PALETTES);
@@ -605,9 +604,9 @@ function renderAbstractAvatar(rand, seed) {
 }
 
 /**
- * Stil "initials": ein bis zwei Buchstaben aus dem Namen (erster Buchstabe
- * von erstem/letztem Wort bzw. die ersten beiden Buchstaben bei einem
- * einzelnen Wort), zentriert vor einem kuratierten Verlauf-Hintergrund.
+ * "initials" style: one or two letters from the name (first letter of the
+ * first/last word, or the first two letters for a single word), centered
+ * in front of a curated gradient background.
  */
 function renderInitialsAvatar(seedSource, rand, seed) {
   const initials = computeInitials(seedSource);
@@ -626,23 +625,24 @@ function renderInitialsAvatar(seedSource, rand, seed) {
 }
 
 /**
- * Generiert einen deterministischen SVG-Avatar für einen Namen.
+ * Generates a deterministic SVG avatar for a name.
  *
- * @param {string} name - Beliebiger Name/String, dient als Seed.
+ * @param {string} name - Any name/string, used as the seed.
  * @param {object} [options]
- * @param {number} [options.size=128] - Breite/Höhe des SVG in Pixeln.
+ * @param {number} [options.size=128] - Width/height of the SVG in pixels.
  * @param {'character'|'abstract'|'initials'} [options.style='character'] -
- *   Visueller Stil: "character" (ausführliche Figur, Default), "abstract"
- *   (abstrakte Farbformen) oder "initials" (Initialen vor Farbfläche).
- *   Unbekannte Werte fallen auf "character" zurück.
- * @returns {string} Valider, eigenständiger SVG-Markup-String (inkl. xmlns).
+ *   Visual style: "character" (detailed figure, default), "abstract"
+ *   (abstract color shapes), or "initials" (initials in front of a color
+ *   area). Unknown values fall back to "character".
+ * @returns {string} Valid, standalone SVG markup string (including xmlns).
  */
 export function generateAvatar(name, options = {}) {
   const { size = 128, style = 'character' } = options;
-  // .normalize('NFC') wandelt Umlaute/Akzente in ihre vorkomponierte Normalform
-  // um (z. B. "a" + Combining-Diaeresis -> "ä"), damit visuell identische Namen
-  // unabhängig von ihrer Unicode-Kodierung (NFC vs. NFD, je nach Betriebssystem/
-  // Eingabequelle) immer denselben Seed und damit denselben Avatar ergeben.
+  // .normalize('NFC') converts umlauts/accents into their precomposed
+  // normal form (e.g. "a" + combining diaeresis -> "ä"), so that visually
+  // identical names always yield the same seed and thus the same avatar,
+  // regardless of their Unicode encoding (NFC vs. NFD, depending on
+  // operating system/input source).
   const seedSource =
     typeof name === 'string' && name.trim().length > 0 ? name.trim().normalize('NFC') : 'anonymous';
 
@@ -658,7 +658,7 @@ export function generateAvatar(name, options = {}) {
         : renderCharacterAvatar(rand, seed);
 
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="Avatar von ${escapeXml(seedSource)}">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="Avatar of ${escapeXml(seedSource)}">` +
     `<defs>${scene.defs}</defs>` +
     `<rect x="0" y="0" width="100" height="100" rx="14" fill="${scene.backgroundFill}"/>` +
     scene.content +
@@ -667,9 +667,9 @@ export function generateAvatar(name, options = {}) {
 }
 
 /**
- * Dünner Klassen-Wrapper für DI-freundliche MVC-Integration, z. B. als
- * injizierbarer Service in einem Controller/View-Layer. Enthält keine eigene
- * Logik -- delegiert an generateAvatar.
+ * Thin class wrapper for DI-friendly MVC integration, e.g. as an
+ * injectable service in a controller/view layer. Contains no logic of its
+ * own -- delegates to generateAvatar.
  */
 export class AvatarGenerator {
   constructor(defaultOptions = {}) {

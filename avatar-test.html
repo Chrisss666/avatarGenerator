@@ -1,14 +1,14 @@
 <!--
   avatar-test.html
   Copyright (c) 2026 Chrisss666 (https://github.com/Chrisss666). All Rights Reserved.
-  Lizenz: siehe LICENSE-Datei im Repository-Root -- Nutzung nur mit
-  ausdrücklicher Erlaubnis des Autors gestattet.
+  License: see the LICENSE file in the repository root -- use only permitted
+  with the express permission of the author.
 -->
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Avatar Generator – Live-Test</title>
+<title>Avatar Generator – Live Test</title>
 <style>
   :root { color-scheme: light dark; }
   body {
@@ -71,41 +71,41 @@
 </style>
 </head>
 <body>
-  <h1>Avatar Generator – Live-Test</h1>
-  <p>Gib einen Namen ein: der Avatar wird sofort erzeugt. Gleicher Name ergibt immer exakt denselben Avatar.</p>
+  <h1>Avatar Generator – Live Test</h1>
+  <p>Enter a name: the avatar is generated instantly. The same name always produces exactly the same avatar.</p>
 
   <div class="panel">
     <div id="avatar-container"></div>
     <div class="controls">
       <div class="row">
         <label for="nameInput">Name</label>
-        <input type="text" id="nameInput" value="Max Mustermann" autocomplete="off" />
+        <input type="text" id="nameInput" value="John Doe" autocomplete="off" />
       </div>
       <div class="row">
-        <label for="styleSelect">Stil</label>
+        <label for="styleSelect">Style</label>
         <select id="styleSelect">
-          <option value="character">Charakter-Figur</option>
-          <option value="abstract">Abstrakte Farben</option>
-          <option value="initials">Abstrakte Initialen</option>
+          <option value="character">Character figure</option>
+          <option value="abstract">Abstract colors</option>
+          <option value="initials">Abstract initials</option>
         </select>
       </div>
       <div class="row">
-        <button id="randomBtn">Zufälliger Beispielname</button>
+        <button id="randomBtn">Random example name</button>
       </div>
       <div id="seedInfo"></div>
     </div>
   </div>
 
-  <h2 style="font-size:1.1rem;">Ein paar Beispiele zum Vergleich</h2>
+  <h2 style="font-size:1.1rem;">A few examples for comparison</h2>
   <div class="gallery" id="gallery"></div>
 
   <script type="module">
     // -----------------------------------------------------------------------
-    // Eingebettete Kopie von avatarGenerator.js, damit diese Testseite ganz
-    // ohne lokalen Server per Doppelklick funktioniert (ES-Module dürfen aus
-    // Sicherheitsgründen im Browser nicht per file:// aus separaten Dateien
-    // nachgeladen werden). Die eigentliche, zu verwendende Quelle bleibt
-    // avatarGenerator.js im selben Ordner.
+    // Embedded copy of avatarGenerator.js, so this test page works purely by
+    // double-clicking, without a local server (ES modules are not allowed to
+    // be loaded from separate files via file:// in the browser for security
+    // reasons). The actual source to use remains avatarGenerator.js in the
+    // same folder.
     // -----------------------------------------------------------------------
 
     function hashString(str) {
@@ -580,9 +580,10 @@
 
     function generateAvatar(name, options = {}) {
       const { size = 128, style = 'character' } = options;
-      // .normalize('NFC') wandelt Umlaute/Akzente in ihre vorkomponierte Normalform
-      // um, damit visuell identische Namen unabhängig von ihrer Unicode-Kodierung
-      // (NFC vs. NFD) immer denselben Seed und damit denselben Avatar ergeben.
+      // .normalize('NFC') converts umlauts/accents into their precomposed
+      // normal form, so that visually identical names always yield the same
+      // seed and thus the same avatar, regardless of their Unicode encoding
+      // (NFC vs. NFD).
       const seedSource =
         typeof name === 'string' && name.trim().length > 0 ? name.trim().normalize('NFC') : 'anonymous';
       const seed = hashString(seedSource);
@@ -597,7 +598,7 @@
             : renderCharacterAvatar(rand, seed);
 
       return (
-        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="Avatar von ${escapeXml(seedSource)}">` +
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="Avatar of ${escapeXml(seedSource)}">` +
         `<defs>${scene.defs}</defs>` +
         `<rect x="0" y="0" width="100" height="100" rx="14" fill="${scene.backgroundFill}"/>` +
         scene.content +
@@ -606,7 +607,7 @@
     }
 
     // -----------------------------------------------------------------------
-    // UI-Logik
+    // UI logic
     // -----------------------------------------------------------------------
     const nameInput = document.getElementById('nameInput');
     const styleSelect = document.getElementById('styleSelect');
@@ -616,9 +617,9 @@
     const randomBtn = document.getElementById('randomBtn');
 
     const EXAMPLE_NAMES = [
-      'Max Mustermann', 'Erika Musterfrau', 'John Doe', 'Jane Smith',
-      'Alice Wonderland', 'Bob Builder', 'Charlie Chaplin', 'Dana Scully',
-      'Grace Hopper', 'Hans Wurst', 'Sophie Müller', 'Tom Sawyer',
+      'John Doe', 'Jane Smith', 'Alice Wonderland', 'Bob Builder',
+      'Charlie Chaplin', 'Dana Scully', 'Grace Hopper', 'Tom Sawyer',
+      'Sophie Miller', 'Max Mustermann', 'Erika Mustermann', 'Hans Wurst',
     ];
 
     function update() {
@@ -628,7 +629,7 @@
       container.innerHTML = svg;
       const seedSource =
         typeof name === 'string' && name.trim().length > 0 ? name.trim().normalize('NFC') : 'anonymous';
-      seedInfo.textContent = `Seed-Quelle: "${seedSource}" · Stil: "${style}"`;
+      seedInfo.textContent = `Seed source: "${seedSource}" · Style: "${style}"`;
     }
 
     function renderGallery() {

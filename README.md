@@ -1,38 +1,38 @@
 # avatarJS
 
-Deterministischer, abhängigkeitsfreier Charakter-Avatar-Generator in Vanilla JavaScript (ES6).
+Deterministic, dependency-free character avatar generator in vanilla JavaScript (ES6).
 
-Aus einem beliebigen Namen (z. B. `"Max Mustermann"`) wird ein einzigartiger SVG-Avatar erzeugt — wahlweise als kleine Figur mit Hautton, Frisur, Bart, Augen, Kleidung, Brille, Kopfbedeckung und Schmuck, als abstraktes Farbmuster oder als Initialen-Kachel. Der gleiche Name erzeugt **immer exakt denselben Avatar** (Seed-basierter Pseudozufall), unterschiedliche Namen ergeben sichtbar unterschiedliche Ergebnisse.
+From any given name (e.g. `"John Doe"`) a unique SVG avatar is generated — either as a small character with skin tone, hairstyle, beard, eyes, clothing, glasses, headwear and jewelry, as an abstract color pattern, or as an initials tile. The same name **always produces exactly the same avatar** (seed-based pseudo-randomness), while different names produce visibly different results.
 
 ## Features
 
-- **Zero Dependencies / Offline-fähig** — keine externen Libraries, Fonts, Bilder oder Netzwerk-Requests. Alles wird zur Laufzeit als reiner SVG-String zusammengesetzt.
-- **Deterministisch** — Name → NFC-Normalisierung → FNV-1a Hash → Seed → Mulberry32-PRNG. Gleicher Name = gleicher Avatar, reproduzierbar über Sessions, Geräte und Unicode-Kodierungen (NFC/NFD) hinweg.
-- **3 wählbare Stile** (`options.style`) — `"character"` (ausführliche Figur, Default), `"abstract"` (abstrakte Farbformen) und `"initials"` (Initialen vor Farbfläche).
-- **Große Vielfalt** — im Stil `"character"`: 10 Hauttöne, 13 Haarfarben, 9 Frisuren, 6 Bart-Varianten, 6 Augen-Varianten, 5 Augenbrauen, 3 Nasen, 6 Mund-Varianten, 3 Brillen, 3 Kopfbedeckungen, Ohrringe, Sommersprossen, Rouge und 4 Kleidungsschnitte vor 10 Verlaufs-Hintergründen — mehrere Milliarden mögliche Kombinationen.
-- **Hochwertige Optik** — durchgängige Konturlinien, Bezier-basiertes Gesicht (kein Ellipsen-Klischee), Farbverlauf-Hintergründe, weiche Schattierung/Glanzlicht und ein dezenter Sticker-Schatten.
-- **MVC-freundlich** — `generateAvatar(name, options)` liefert einen validen, eigenständigen SVG-String (inkl. `xmlns`), der sich direkt in `innerHTML` bzw. eine View einsetzen lässt. Zusätzlich ein schlanker `AvatarGenerator`-Klassen-Wrapper für DI-basierte Architekturen.
+- **Zero Dependencies / Offline-capable** — no external libraries, fonts, images, or network requests. Everything is assembled at runtime as a pure SVG string.
+- **Deterministic** — name → NFC normalization → FNV-1a hash → seed → Mulberry32 PRNG. Same name = same avatar, reproducible across sessions, devices, and Unicode encodings (NFC/NFD).
+- **3 selectable styles** (`options.style`) — `"character"` (detailed figure, default), `"abstract"` (abstract color shapes), and `"initials"` (initials in front of a color area).
+- **Great variety** — in `"character"` style: 10 skin tones, 13 hair colors, 9 hairstyles, 6 beard variants, 6 eye variants, 5 eyebrows, 3 noses, 6 mouth variants, 3 glasses, 3 headwear types, earrings, freckles, blush, and 4 clothing cuts in front of 10 gradient backgrounds — several billion possible combinations.
+- **High-quality look** — consistent outlines, Bezier-based face (no ellipse cliché), gradient backgrounds, soft shading/highlights, and a subtle sticker shadow.
+- **MVC-friendly** — `generateAvatar(name, options)` returns a valid, standalone SVG string (including `xmlns`) that can be inserted directly into `innerHTML` or a view. Also includes a lightweight `AvatarGenerator` class wrapper for DI-based architectures.
 
-## Verwendung
+## Usage
 
-Keine Installation, kein Build-Schritt nötig — einfach die Datei [`avatarGenerator.js`](avatarGenerator.js) ins Projekt kopieren und als ES-Modul importieren.
+No installation, no build step needed — just copy the [`avatarGenerator.js`](avatarGenerator.js) file into your project and import it as an ES module.
 
 ```js
 import { generateAvatar } from './avatarGenerator.js';
 
-const svgString = generateAvatar('Max Mustermann', { size: 128 });
+const svgString = generateAvatar('John Doe', { size: 128 });
 document.getElementById('avatar-container').innerHTML = svgString;
 ```
 
-Stil auswählen:
+Choosing a style:
 
 ```js
-generateAvatar('Max Mustermann', { style: 'character' }); // Default: ausführliche Figur
-generateAvatar('Max Mustermann', { style: 'abstract' });  // Abstrakte Farbformen
-generateAvatar('Max Mustermann', { style: 'initials' });  // Initialen vor Farbfläche
+generateAvatar('John Doe', { style: 'character' }); // Default: detailed figure
+generateAvatar('John Doe', { style: 'abstract' });  // Abstract color shapes
+generateAvatar('John Doe', { style: 'initials' });  // Initials in front of a color area
 ```
 
-Als injizierbarer Service (z. B. in einem MVC-Controller/View-Layer):
+As an injectable service (e.g. in an MVC controller/view layer):
 
 ```js
 import { AvatarGenerator } from './avatarGenerator.js';
@@ -45,13 +45,13 @@ view.render({ avatarSvg: avatarService.create(user.name) });
 
 #### `generateAvatar(name, options?)`
 
-| Parameter        | Typ      | Beschreibung                                                                 |
-| ----------------- | -------- | ----------------------------------------------------------------------------- |
-| `name`            | `string` | Beliebiger String, dient als Seed. Leere/ungültige Werte fallen auf `"anonymous"` zurück. |
-| `options.size`    | `number` | Breite/Höhe des SVG in Pixeln. Standard: `128`.                              |
-| `options.style`   | `string` | `"character"` (Default), `"abstract"` oder `"initials"`. Unbekannte Werte fallen auf `"character"` zurück. |
+| Parameter         | Type     | Description                                                                    |
+| ------------------ | -------- | ------------------------------------------------------------------------------- |
+| `name`             | `string` | Any string, used as the seed. Empty/invalid values fall back to `"anonymous"`. |
+| `options.size`     | `number` | Width/height of the SVG in pixels. Default: `128`.                             |
+| `options.style`    | `string` | `"character"` (default), `"abstract"`, or `"initials"`. Unknown values fall back to `"character"`. |
 
-Gibt einen vollständigen SVG-Markup-String zurück (`<svg xmlns="..." viewBox="0 0 100 100" ...>...</svg>`).
+Returns a complete SVG markup string (`<svg xmlns="..." viewBox="0 0 100 100" ...>...</svg>`).
 
 #### `class AvatarGenerator`
 
@@ -59,14 +59,14 @@ Gibt einen vollständigen SVG-Markup-String zurück (`<svg xmlns="..." viewBox="
 new AvatarGenerator(defaultOptions?)
 ```
 
-- `.create(name, options?)` — delegiert an `generateAvatar`, gemischt mit den im Konstruktor gesetzten Default-Optionen.
+- `.create(name, options?)` — delegates to `generateAvatar`, merged with the default options set in the constructor.
 
-## Live-Demo
+## Live Demo
 
-[`avatar-test.html`](avatar-test.html) ist eine eigenständige, offline lauffähige Testseite (einfach im Browser öffnen) mit Eingabefeld für Live-Vorschau und einer Beispiel-Galerie.
+[`avatar-test.html`](avatar-test.html) is a standalone, offline-capable test page (just open it in a browser) with an input field for a live preview and an example gallery.
 
-## Lizenz
+## License
 
-Dieses Projekt steht **nicht** unter einer Open-Source-Lizenz. Alle Rechte liegen bei [Chrisss666](https://github.com/Chrisss666). Nutzung, Kopie, Modifikation oder Weitergabe ist nur mit ausdrücklicher Erlaubnis des Autors gestattet — siehe [LICENSE](LICENSE).
+This project is **not** under an open-source license. All rights belong to [Chrisss666](https://github.com/Chrisss666). Use, copying, modification, or redistribution is only permitted with the express permission of the author — see [LICENSE](LICENSE).
 
-Für eine Nutzungserlaubnis bitte über GitHub Kontakt aufnehmen.
+For usage permission, please get in touch via GitHub.
